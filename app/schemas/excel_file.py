@@ -7,7 +7,8 @@ class ExcelFileBase(BaseModel):
     content: bytes
 
 class ExcelFileCreate(ExcelFileBase):
-    category_id: UUID
+    # category_id: UUID
+    pass
 
 class ExcelFileUpdate(BaseModel):
     filename: Optional[str] = None

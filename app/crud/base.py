@@ -2,7 +2,6 @@ from typing import TypeVar, Generic, Type, List, Optional
 from fastapi import HTTPException
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
-from sqlalchemy.ext.declarative import as_declarative, declared_attr
 from uuid import UUID
 
 ModelType = TypeVar("ModelType")
@@ -23,7 +22,7 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
         return db.query(self.model).offset(skip).limit(limit).all()
 
     def create(self, db: Session, obj_in: CreateSchemaType) -> ModelType:
-        obj_data = obj_in.dict()
+        obj_data = obj_in.model_dump()
         db_obj = self.model(**obj_data)
         db.add(db_obj)
         db.commit()
@@ -31,7 +30,7 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
         return db_obj
 
     def update(self, db: Session, db_obj: ModelType, obj_in: UpdateSchemaType) -> ModelType:
-        obj_data = obj_in.dict(exclude_unset=True)
+        obj_data = obj_in.model_dump(exclude_unset=True)
         for key, value in obj_data.items():
             setattr(db_obj, key, value)
         db.commit()

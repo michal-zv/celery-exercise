@@ -14,4 +14,8 @@ Base.metadata.create_all(bind=engine)
 def test():
     return {"ping": "pong"}
 
+# routes
+router.include_router(categories)
+router.include_router(files)
+
 app.include_router(router)
