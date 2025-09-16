@@ -12,4 +12,4 @@ class ExcelFile(Base):
     content = Column(LargeBinary, nullable=False)
 
     category_id = Column(UUID(as_uuid=True), ForeignKey("categories.id"), nullable=False, index=True)
-    category = relationship("Category", back_populates="excel_files")
+    category = relationship("Category", back_populates="files")
