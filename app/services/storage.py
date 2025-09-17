@@ -12,7 +12,7 @@ class LocalStorage:
     def save_file(self, file, filename: str) -> str:
         extention = os.path.splitext(filename)[1]
         unique_name = f"{uuid4()}{extention}"
-        file_path = os.path.join(self.base_dir, unique_name) # TODO FIX PATH
+        file_path = os.path.join(self.base_dir, unique_name)
 
         with open(file_path, "wb") as f:
             f.write(file.read())

@@ -1,5 +1,6 @@
 from typing import Optional
 from uuid import UUID
+from datetime import datetime
 from pydantic import BaseModel
 
 class FileBase(BaseModel):
@@ -16,4 +17,5 @@ class FileUpdate(BaseModel):
 
 class FileRead(FileBase):
     id: UUID
+    uploaded_at: datetime
     category_id: UUID
