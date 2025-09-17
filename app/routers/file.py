@@ -5,13 +5,13 @@ from app.db.database import get_db
 from app.models import File
 from app.schemas import FileCreate, FileRead, FileUpdate
 from app.crud import file, category
-from uuid import UUID, uuid4
+from uuid import UUID
 from app.config import settings
-
-# make sure dir exists
-os.makedirs(settings.upload_dir, exist_ok=True)
+from app.services.storage import LocalStorage
 
 router = APIRouter(prefix="/files", tags=["Files"])
+
+storage = LocalStorage(settings.upload_dir)
 
 @router.post("/", response_model=FileRead)
 async def upload_file(
@@ -28,24 +28,23 @@ async def upload_file(
     if not existing_category:
         raise HTTPException(status_code=404, detail=f"Category '{category_name}' not found")
     
-    # generate unique filename to avoid collisions
-    # todo maybe change to id instead
-    # todo delete file if create failed/create file after
-    extention = os.path.splitext(uploaded_file.filename)[1]
-    unique_name = f"{uuid4()}{extention}"
-    file_path = os.path.join(settings.upload_dir, unique_name)
+    try:
+        # save file
+        file_path = storage.save_file(uploaded_file.file, uploaded_file.filename)
 
-    # save file to local dir
-    with open(file_path, "wb") as f:
-        f.write(uploaded_file.file.read())
+        file_in = FileCreate(
+            filename=uploaded_file.filename,
+            path=file_path, 
+            category_id=existing_category.id
+        )
+        return file.create(db, file_in)
 
-    file_in = FileCreate(
-        filename=uploaded_file.filename,
-        path=file_path, 
-        category_id=existing_category.id
-    )
-    
-    return file.create(db, file_in)
+    except Exception as e:
+        # delete file on db fail
+        if os.path.exists(file_path):
+            os.remove(file_path)
+        raise HTTPException(status_code=500, detail=f"Upload failed: {str(e)}")
+
 
 # routes for testing TO BE DELETED
 @router.get("/", response_model=list[FileRead])
