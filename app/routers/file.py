@@ -55,10 +55,10 @@ def list_files(db: Session = Depends(get_db)):
 # def read_file_by_id(file_id: UUID, db: Session = Depends(get_db)):
 #     return file.get(db, file_id)
 
-# @router.put("/{file_id}", response_model=FileRead)
-# def update_file(file_id: UUID, file_in: FileUpdate, db: Session = Depends(get_db)):
-#     existing = file.get(db, file_id)
-#     return file.update(db, existing, file_in)
+@router.put("/{file_id}", response_model=FileRead)
+def update_file(file_id: UUID, file_in: FileUpdate, db: Session = Depends(get_db)):
+    existing = file.get(db, file_id)
+    return file.update(db, existing, file_in)
 
 @router.delete("/{file_id}", response_model=FileRead)
 def delete_file(file_id: UUID, db: Session = Depends(get_db)):

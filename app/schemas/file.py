@@ -13,7 +13,7 @@ class FileCreate(FileBase):
 
 class FileUpdate(BaseModel):
     filename: Optional[str] = None
-    content: Optional[bytes] = None
+    path: Optional[str] = None
 
 class FileRead(FileBase):
     id: UUID
