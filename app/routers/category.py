@@ -1,3 +1,4 @@
+from collections import defaultdict
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from app.db.database import get_db
@@ -5,7 +6,7 @@ from app.models import Category
 from app.schemas import CategoryCreate, CategoryRead, CategoryUpdate
 from app.crud.category import category
 from uuid import UUID
-import pandas as pd
+from app.utils.excel import file_sum_numbers, file_contains_term
 
 router = APIRouter(prefix="/categories", tags=["Categorys"])
 
@@ -21,15 +22,26 @@ def sum_type(type: str, db: Session = Depends(get_db)):
     
     file_list = [file for cat in category_list for file in cat.files]
 
-    sum = 0
-    for file in file_list:
-        excel = pd.ExcelFile(file.path)
-        for sheet in excel.sheet_names:
-            df = pd.read_excel(excel, sheet_name=sheet, header=None)
-            df = df.apply(pd.to_numeric, errors="coerce")
-            sum += df.sum().sum(skipna=True)
+    summary = sum(file_sum_numbers(file.path) for file in file_list)
+    return summary
 
-    return sum
+@router.get("/regions/search/{search_term}")
+def find_regions(search_term: str, db: Session = Depends(get_db)):
+    category_list = category.get_all(db)
+
+    # group files by region
+    region_files = defaultdict(list)
+    for cat in category_list:
+        for file in cat.files:
+            region_files[cat.region].append(file)
+
+    matching_regions = set()
+    for region, files in region_files.items():
+        if any(file_contains_term(f.path, search_term) for f in files):
+            matching_regions.add(region)
+    
+    return {"regions": list(matching_regions)}
+
 
 # for testing TO BE DELETED
 @router.get("/", response_model=list[CategoryRead])
