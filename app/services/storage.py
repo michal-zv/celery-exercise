@@ -1,4 +1,5 @@
 import os
+from pathlib import Path
 from uuid import uuid4
 from app.config import settings
 
@@ -12,12 +13,12 @@ class LocalStorage:
     def save_file(self, file, filename: str) -> str:
         extention = os.path.splitext(filename)[1]
         unique_name = f"{uuid4()}{extention}"
-        file_path = os.path.join(self.base_dir, unique_name)
+        file_path = Path(self.base_dir) / unique_name
 
         with open(file_path, "wb") as f:
             f.write(file.read())
 
-        return file_path
+        return file_path.as_posix()
 
 # saving logic separeted to a "service":
 # 1. can be reused in other saving file needs in the future
