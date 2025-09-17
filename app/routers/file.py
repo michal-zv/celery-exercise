@@ -63,4 +63,8 @@ def list_files(db: Session = Depends(get_db)):
 @router.delete("/{file_id}", response_model=FileRead)
 def delete_file(file_id: UUID, db: Session = Depends(get_db)):
     existing = file.get(db, file_id)
+    if not existing:
+        raise HTTPException(status_code=404, detail="File not found in DB")
+    
+    os.remove(existing.path)
     return file.delete(db, file_id)

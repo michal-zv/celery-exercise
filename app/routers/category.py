@@ -29,7 +29,6 @@ def list_categorys(db: Session = Depends(get_db)):
 #     return category.update(db, existing, category_in)
 
 
-# @router.delete("/{category_id}", response_model=CategoryRead)
-# def delete_category(category_id: UUID, db: Session = Depends(get_db)):
-#     existing = category.get(db, category_id)
-#     return category.delete(db, category_id)
+@router.delete("/{category_id}", response_model=CategoryRead)
+def delete_category(category_id: UUID, db: Session = Depends(get_db)):
+    return category.delete(db, category_id)
