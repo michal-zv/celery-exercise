@@ -8,8 +8,8 @@ class Category(Base):
     __tablename__ = "categories"
 
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    name = Column(String, unique=True, nullable=False)
+    name = Column(String, unique=True, nullable=False, index=True)
     region = Column(String, nullable=False)
-    type = Column(String, nullable=False)
+    type = Column(String, nullable=False) # maybe index?
 
-    files = relationship("ExcelFile", back_populates="category")
+    files = relationship("File", back_populates="category")

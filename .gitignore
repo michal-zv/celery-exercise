@@ -33,3 +33,6 @@ Thumbs.db
 .coverage
 htmlcov/
 .pytest_cache/
+
+# uploads folder
+uploads/

@@ -1,2 +1,2 @@
-from .excel_file import ExcelFileCreate, ExcelFileRead, ExcelFileUpdate
+from .file import FileCreate, FileRead, FileUpdate
 from .category import CategoryCreate, CategoryRead, CategoryUpdate

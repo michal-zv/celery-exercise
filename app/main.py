@@ -9,7 +9,7 @@ router = APIRouter(prefix='/api')
 # todo change to alembic
 Base.metadata.create_all(bind=engine)
 
-# test
+# test TO BE DELETED
 @app.get("/")
 def test():
     return {"ping": "pong"}

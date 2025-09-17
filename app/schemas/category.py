@@ -1,7 +1,7 @@
 from typing import Optional, List
 from uuid import UUID
 from pydantic import BaseModel
-from app.schemas.excel_file import ExcelFileRead
+from app.schemas.file import FileRead
 
 class CategoryBase(BaseModel):
     name: str
@@ -18,4 +18,4 @@ class CategoryUpdate(BaseModel):
 
 class CategoryRead(CategoryBase):
     id: UUID
-    files: List[ExcelFileRead] = []
+    files: List[FileRead] = []

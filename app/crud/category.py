@@ -5,7 +5,7 @@ from app.crud.base import CRUDBase
 
 class CRUDCategory(CRUDBase[Category, CategoryCreate, CategoryUpdate]):
     
-    def get_category_by_name(db: Session, name: str) -> Category | None:
+    def get_category_by_name(self, db: Session, name: str) -> Category | None:
         return db.query(Category).filter(Category.name == name).first()
 
 category = CRUDCategory(Category)

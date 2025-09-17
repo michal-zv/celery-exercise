@@ -2,18 +2,18 @@ from typing import Optional
 from uuid import UUID
 from pydantic import BaseModel
 
-class ExcelFileBase(BaseModel):
+class FileBase(BaseModel):
     filename: str
-    content: bytes
+    path: str
 
-class ExcelFileCreate(ExcelFileBase):
-    # category_id: UUID
+class FileCreate(FileBase):
+    category_id: UUID
     pass
 
-class ExcelFileUpdate(BaseModel):
+class FileUpdate(BaseModel):
     filename: Optional[str] = None
     content: Optional[bytes] = None
 
-class ExcelFileRead(ExcelFileBase):
+class FileRead(FileBase):
     id: UUID
     category_id: UUID

@@ -1,2 +1,2 @@
-from .excel_file import ExcelFile
+from .file import File
 from .category import Category

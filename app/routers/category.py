@@ -12,6 +12,7 @@ router = APIRouter(prefix="/categories", tags=["Categorys"])
 def create_category(category_in: CategoryCreate, db: Session = Depends(get_db)):
     return category.create(db, category_in)
 
+# for testing TO BE DELETED
 @router.get("/", response_model=list[CategoryRead])
 def list_categorys(db: Session = Depends(get_db)):
     return category.get_all(db)
