@@ -6,7 +6,7 @@ from app.schemas.file import FileRead
 class CategoryBase(BaseModel):
     name: str
     region: str
-    type: Optional[str]
+    type: str
 
 class CategoryCreate(CategoryBase):
     pass
