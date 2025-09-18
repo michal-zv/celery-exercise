@@ -11,7 +11,7 @@ from app.services.storage import LocalStorage
 
 router = APIRouter(prefix="/files", tags=["Files"])
 
-storage = LocalStorage(settings.upload_dir)
+storage = LocalStorage(settings.UPLOAD_DIR)
 
 @router.post("/", response_model=FileRead)
 async def upload_file(
