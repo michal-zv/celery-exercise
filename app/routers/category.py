@@ -1,13 +1,16 @@
-from fastapi import APIRouter, Depends, HTTPException
+import os
+from fastapi import APIRouter, Depends, HTTPException, UploadFile
 from sqlalchemy.orm import Session
 from app.db.database import get_db
-from app.models import Category
-from app.schemas import CategoryCreate, CategoryRead, CategoryUpdate
-from app.crud.category import category
-from uuid import UUID
-from app.utils.excel import file_sum_numbers, file_contains_term
+from app.schemas import CategoryCreate, CategoryRead, FileCreate, FileRead, FileUpdate
+from app.crud import category, file
+from app.config import settings
+from app.services.storage import LocalStorage
+from app.utils.excel import file_sum_numbers, file_contains_term, validate_excel_file
 
 router = APIRouter(prefix="/categories", tags=["Categories"])
+
+storage = LocalStorage(settings.UPLOAD_DIR)
 
 @router.post("/", response_model=CategoryRead)
 def create_category(category_in: CategoryCreate, db: Session = Depends(get_db)):
@@ -15,6 +18,44 @@ def create_category(category_in: CategoryCreate, db: Session = Depends(get_db)):
         return category.create(db, category_in)
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to create category: {str(e)}")
+    
+
+@router.post("/{category_name}/upload-file", response_model=FileRead)
+async def upload_file(
+    category_name: str, 
+    uploaded_file: UploadFile, 
+    db: Session = Depends(get_db)
+  ):
+    # make sure its a valid excel file
+    validate_excel_file(uploaded_file)
+
+    # make sure category exists
+    existing_category = category.get_category_by_name(db, category_name)
+    if not existing_category:
+        raise HTTPException(status_code=404, detail=f"Category '{category_name}' not found")
+    
+    try:
+        file_in = FileCreate(
+            filename=uploaded_file.filename,
+            category_id=existing_category.id
+        )
+        db_file = file.create(db, file_in)
+
+        # save file
+        file_path = storage.save_file(uploaded_file.file, uploaded_file.filename, db_file.id)
+
+        file_in = FileUpdate(path=file_path)
+        return file.update(db, db_file, file_in)
+
+    except Exception as e:
+        if file_path and os.path.exists(file_path):
+            os.remove(file_path)
+        
+        if db_file:
+            file.delete(db, db_file.id)
+
+        raise HTTPException(status_code=500, detail=f"Upload failed: {str(e)}")
+
 
 @router.get("/types/{type}/sum")
 def sum_type(type: str, db: Session = Depends(get_db)):
@@ -30,6 +71,7 @@ def sum_type(type: str, db: Session = Depends(get_db)):
 
     return {"sum": summary}
 
+
 @router.get("/regions/search/{search_term}")
 def find_regions(search_term: str, db: Session = Depends(get_db)):
     category_list = category.get_all(db)
@@ -43,21 +85,3 @@ def find_regions(search_term: str, db: Session = Depends(get_db)):
     
     return {"regions": list(matching_regions)}
 
-
-# for testing TO BE DELETED
-@router.get("/", response_model=list[CategoryRead])
-def list_categorys(db: Session = Depends(get_db)):
-    return category.get_all(db)
-
-# @router.get("/{category_id}", response_model=CategoryRead)
-# def read_category_by_id(category_id: UUID, db: Session = Depends(get_db)):
-#     return category.get(db, category_id)
-
-# @router.put("/{category_id}", response_model=CategoryRead)
-# def update_category(category_id: UUID, category_in: CategoryUpdate, db: Session = Depends(get_db)):
-#     existing = category.get(db, category_id)
-#     return category.update(db, existing, category_in)
-
-@router.delete("/{category_id}", response_model=CategoryRead)
-def delete_category(category_id: UUID, db: Session = Depends(get_db)):
-    return category.delete(db, category_id)

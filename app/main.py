@@ -1,5 +1,5 @@
 from fastapi import APIRouter, FastAPI
-from app.routers import categories, files
+from app.routers import categories
 from app.db.database import Base, engine
 
 app = FastAPI()
@@ -12,6 +12,5 @@ Base.metadata.create_all(bind=engine)
 
 # routes
 router.include_router(categories)
-router.include_router(files)
 
 app.include_router(router)
