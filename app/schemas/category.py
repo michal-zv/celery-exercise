@@ -1,3 +1,4 @@
+from datetime import datetime
 from typing import Optional, List
 from uuid import UUID
 from pydantic import BaseModel, Field
@@ -7,6 +8,9 @@ class CategoryBase(BaseModel):
     name: str = Field(min_length=1, max_length=255, strip_whitespace=True)
     region: str = Field(min_length=1, max_length=255, strip_whitespace=True)
     type: str = Field(min_length=1, max_length=255, strip_whitespace=True)
+
+    class Config:
+        validate_by_name = True
 
 class CategoryCreate(CategoryBase):
     pass
@@ -19,3 +23,8 @@ class CategoryUpdate(BaseModel):
 class CategoryRead(CategoryBase):
     id: UUID
     files: List[FileRead] = []
+    created_at: datetime
+    updated_at: datetime
+
+    class Config:
+        orm_mode = True
