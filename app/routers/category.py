@@ -1,4 +1,3 @@
-from collections import defaultdict
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from app.db.database import get_db
@@ -8,7 +7,7 @@ from app.crud.category import category
 from uuid import UUID
 from app.utils.excel import file_sum_numbers, file_contains_term
 
-router = APIRouter(prefix="/categories", tags=["Categorys"])
+router = APIRouter(prefix="/categories", tags=["Categories"])
 
 @router.post("/", response_model=CategoryRead)
 def create_category(category_in: CategoryCreate, db: Session = Depends(get_db)):
@@ -23,25 +22,24 @@ def sum_type(type: str, db: Session = Depends(get_db)):
     if not category_list:
         raise HTTPException(status_code=404, detail=f"No categories found for type '{type}'")
     
-    file_list = [file for cat in category_list for file in cat.files]
+    summary = sum(
+        file_sum_numbers(file.path)
+        for cat in category_list
+        for file in cat.files
+    )
 
-    summary = sum(file_sum_numbers(file.path) for file in file_list)
-    return summary
+    return {"sum": summary}
 
 @router.get("/regions/search/{search_term}")
 def find_regions(search_term: str, db: Session = Depends(get_db)):
     category_list = category.get_all(db)
 
-    # group files by region
-    region_files = defaultdict(list)
-    for cat in category_list:
-        for file in cat.files:
-            region_files[cat.region].append(file)
-
     matching_regions = set()
-    for region, files in region_files.items():
-        if any(file_contains_term(f.path, search_term) for f in files):
-            matching_regions.add(region)
+    for cat in category_list:
+        for f in cat.files:
+            if file_contains_term(f.path, search_term):
+               matching_regions.add(cat.region)
+               break  # stop checking files in this category once match is found
     
     return {"regions": list(matching_regions)}
 
