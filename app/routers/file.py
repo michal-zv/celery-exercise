@@ -29,15 +29,18 @@ async def upload_file(
         raise HTTPException(status_code=404, detail=f"Category '{category_name}' not found")
     
     try:
-        # save file
-        file_path = storage.save_file(uploaded_file.file, uploaded_file.filename)
-
         file_in = FileCreate(
             filename=uploaded_file.filename,
-            path=file_path, 
             category_id=existing_category.id
         )
-        return file.create(db, file_in)
+        db_file =  file.create(db, file_in)
+
+        # save file
+        file_path = storage.save_file(uploaded_file.file, uploaded_file.filename, db_file.id)
+
+        file_in = FileUpdate(path=file_path)
+        
+        return file.update(db, db_file, file_in)
 
     except Exception as e:
         # delete file on db fail

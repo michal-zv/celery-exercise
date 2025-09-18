@@ -1,19 +1,18 @@
 import os
 from pathlib import Path
-from datetime import datetime, timezone
+import re
+from uuid import UUID
 
 class LocalStorage:
     def __init__(self, base_dir: str):
         self.base_dir = base_dir
         os.makedirs(self.base_dir, exist_ok=True)
 
-    # generate unique filename to avoid collisions
-    # use upload time as distinction
-    # todo maybe change to id instead
-    def save_file(self, file, filename: str) -> str:
-        name, extention = filename.rsplit('.', 1)
-        ts = datetime.now(timezone.utc).strftime("%Y%m%d%H%M%S%f")
-        unique_name = f"{name}-{ts}.{extention}"
+    # create unique filename to avoid collisions 
+    # use file_id to be recognizable in filesystem or on debug
+    def save_file(self, file, filename: str, file_id: UUID) -> str:
+        clean_name = re.sub(r"[^\w\-_\.]", "_", filename)
+        unique_name = f"{file_id}-{clean_name}"
         file_path = Path(self.base_dir) / unique_name
 
         with open(file_path, "wb") as f:
