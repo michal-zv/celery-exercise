@@ -1,3 +1,4 @@
+from fastapi import HTTPException, UploadFile
 import pandas as pd
 
 def file_contains_term(file_path: str, search_term: str) -> bool:
@@ -24,3 +25,18 @@ def file_sum_numbers(file_path: str) -> float:
     except Exception:
         return 0  # skip unreadable/missing files
     return(sum)
+
+def validate_excel_file(file: UploadFile):
+    """    Checks if file is a valid excel file."""
+    if not file.filename.lower().endswith(".xlsx"):
+        raise HTTPException(status_code=400, detail="Only .xlsx files allowed")
+    
+    try:
+        file.file.seek(0)
+        xls = pd.ExcelFile(file.file, engine="openpyxl")
+        if not xls.sheet_names:
+            raise HTTPException(status_code=400, detail="Excel file contains no sheets")
+    except Exception:
+        raise HTTPException(status_code=400, detail="Invalid or corrupted Excel file")
+    finally:
+        file.file.seek(0)  # reset pointer for later saving

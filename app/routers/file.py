@@ -8,6 +8,7 @@ from app.crud import file, category
 from uuid import UUID
 from app.config import settings
 from app.services.storage import LocalStorage
+from app.utils.excel import validate_excel_file
 
 router = APIRouter(prefix="/files", tags=["Files"])
 
@@ -19,9 +20,8 @@ async def upload_file(
     uploaded_file: UploadFile, 
     db: Session = Depends(get_db)
   ):
-    # make sure its an excel file
-    if not uploaded_file.filename.lower().endswith(".xlsx"):
-        raise HTTPException(status_code=400, detail="Only .xlsx files allowed")
+    # make sure its a valid excel file
+    validate_excel_file(uploaded_file)
 
     # make sure category exists
     existing_category = category.get_category_by_name(db, category_name)
@@ -33,19 +33,21 @@ async def upload_file(
             filename=uploaded_file.filename,
             category_id=existing_category.id
         )
-        db_file =  file.create(db, file_in)
+        db_file = file.create(db, file_in)
 
         # save file
         file_path = storage.save_file(uploaded_file.file, uploaded_file.filename, db_file.id)
 
         file_in = FileUpdate(path=file_path)
-        
         return file.update(db, db_file, file_in)
 
     except Exception as e:
-        # delete file on db fail
         if file_path and os.path.exists(file_path):
             os.remove(file_path)
+        
+        if db_file:
+            file.delete(db, db_file.id)
+
         raise HTTPException(status_code=500, detail=f"Upload failed: {str(e)}")
 
 
