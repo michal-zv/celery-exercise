@@ -20,7 +20,7 @@ async def upload_file(
     db: Session = Depends(get_db)
   ):
     # make sure its an excel file
-    if not uploaded_file.filename.endswith(".xlsx"):
+    if not uploaded_file.filename.lower().endswith(".xlsx"):
         raise HTTPException(status_code=400, detail="Only .xlsx files allowed")
 
     # make sure category exists
@@ -41,7 +41,7 @@ async def upload_file(
 
     except Exception as e:
         # delete file on db fail
-        if os.path.exists(file_path):
+        if file_path and os.path.exists(file_path):
             os.remove(file_path)
         raise HTTPException(status_code=500, detail=f"Upload failed: {str(e)}")
 

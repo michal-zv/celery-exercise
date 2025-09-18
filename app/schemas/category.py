@@ -1,12 +1,12 @@
 from typing import Optional, List
 from uuid import UUID
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from app.schemas.file import FileRead
 
 class CategoryBase(BaseModel):
-    name: str
-    region: str
-    type: str
+    name: str = Field(min_length=1, max_length=255, strip_whitespace=True)
+    region: str = Field(min_length=1, max_length=255, strip_whitespace=True)
+    type: str = Field(min_length=1, max_length=255, strip_whitespace=True)
 
 class CategoryCreate(CategoryBase):
     pass

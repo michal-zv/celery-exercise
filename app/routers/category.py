@@ -12,7 +12,10 @@ router = APIRouter(prefix="/categories", tags=["Categorys"])
 
 @router.post("/", response_model=CategoryRead)
 def create_category(category_in: CategoryCreate, db: Session = Depends(get_db)):
-    return category.create(db, category_in)
+    try:
+        return category.create(db, category_in)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to create category: {str(e)}")
 
 @router.get("/types/{type}/sum")
 def sum_type(type: str, db: Session = Depends(get_db)):

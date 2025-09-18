@@ -10,6 +10,6 @@ class Category(Base):
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     name = Column(String, unique=True, nullable=False, index=True)
     region = Column(String, nullable=False)
-    type = Column(String, nullable=False) # maybe index?
+    type = Column(String, nullable=False, index=True)
 
-    files = relationship("File", back_populates="category")
+    files = relationship('File', back_populates="category", lazy=True, cascade="all, delete-orphan")
