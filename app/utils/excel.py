@@ -10,7 +10,10 @@ def file_contains_term(file_path: str, search_term: str) -> bool:
         excel = pd.ExcelFile(file_path)
         for sheet in excel.sheet_names:
             df = pd.read_excel(excel, sheet_name=sheet, header=None, dtype=str)
-            if search_term in df.values:
+
+            # flatten df and check all cells for term
+            all_cells = df.astype(str).stack()
+            if all_cells.str.contains(search_term, case=False, na=False).any():
                 return True
     except Exception as e:
         logger.warning(f"Failed to read file '{file_path}' for search term '{search_term}': {str(e)}")
