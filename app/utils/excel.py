@@ -1,11 +1,16 @@
 import logging
+import re
 from fastapi import HTTPException, UploadFile
 import pandas as pd
 
 logger = logging.getLogger(__name__)
 
 def file_contains_term(file_path: str, search_term: str) -> bool:
-    """Return true/false if search_term exists in the excel file."""
+    """Return true/false if search_term exists in the excel file. search_term is treated as a whole word"""
+
+    # find whole words only (avoids matching single characters inside other words)
+    pattern = rf'\b{re.escape(search_term)}\b'
+
     try:
         excel = pd.ExcelFile(file_path)
         for sheet in excel.sheet_names:
@@ -13,8 +18,9 @@ def file_contains_term(file_path: str, search_term: str) -> bool:
 
             # flatten df and check all cells for term
             all_cells = df.astype(str).stack()
-            if all_cells.str.contains(search_term, case=False, na=False).any():
+            if all_cells.str.contains(pattern, case=False, na=False, regex=True).any():
                 return True
+            
     except Exception as e:
         logger.warning(f"Failed to read file '{file_path}' for search term '{search_term}': {str(e)}")
         return False
