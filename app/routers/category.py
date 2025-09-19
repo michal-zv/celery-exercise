@@ -16,7 +16,8 @@ logger = logging.getLogger(__name__)
 
 
 @router.post("/", response_model=CategoryRead)
-def create_category(category_in: CategoryCreate, db: Session = Depends(get_db)):
+def create_category(category_in: CategoryCreate, db: Session = Depends(get_db)) -> CategoryRead:
+    """create a new category with the given region and type"""
     try:
         return category.create(db, category_in)
     except Exception as e:
@@ -25,11 +26,8 @@ def create_category(category_in: CategoryCreate, db: Session = Depends(get_db)):
     
 
 @router.post("/{category_name}/upload-file", response_model=FileRead)
-def upload_file(
-    category_name: str,
-    uploaded_file: UploadFile,
-    db: Session = Depends(get_db)
-) -> FileRead:
+def upload_file(category_name: str, uploaded_file: UploadFile, db: Session = Depends(get_db)) -> FileRead:
+    """uploads a file to a category"""
     # validate excel file
     validate_excel_file(uploaded_file)
 
@@ -71,6 +69,7 @@ def upload_file(
 
 @router.get("/types/{type}/sum")
 def sum_type(type: str, db: Session = Depends(get_db)):
+    """returns the sum of all numbers in all excel files in categories of this type"""
     category_list = category.get_categories_by_type(db, type)
     if not category_list:
         logger.warning(f"No categories found for type '{type}'")
@@ -87,6 +86,7 @@ def sum_type(type: str, db: Session = Depends(get_db)):
 
 @router.get("/regions/search/{search_term}")
 def find_regions(search_term: str, db: Session = Depends(get_db)):
+    """returns all regions of categories that have at least one excel file that contains the search_term"""
     category_list = category.get_all(db)
 
     matching_regions = set()
