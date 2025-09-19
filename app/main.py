@@ -1,6 +1,11 @@
+import logging
 from fastapi import APIRouter, FastAPI
+from app.logger import setup_logging
 from app.routers import categories
 from app.db.database import Base, engine
+
+setup_logging()
+logger = logging.getLogger(__name__)
 
 app = FastAPI()
 router = APIRouter(prefix='/api')

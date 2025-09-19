@@ -2,6 +2,9 @@ import os
 from pathlib import Path
 import re
 from uuid import UUID
+import logging
+
+logger = logging.getLogger(__name__)
 
 class LocalStorage:
     def __init__(self, base_dir: str):
@@ -15,10 +18,16 @@ class LocalStorage:
         unique_name = f"{file_id}-{clean_name}"
         file_path = Path(self.base_dir) / unique_name
 
-        with open(file_path, "wb") as f:
-            f.write(file.read())
-
-        return file_path.as_posix()
+        try:
+            with open(file_path, "wb") as f:
+                data = file.read()
+                f.write(file.read())
+            logger.debug(f"Saved file {file_path} ({len(data)} bytes)")
+            return file_path.as_posix()
+        
+        except Exception as e:
+            logger.error(f"Failed to save file {file_path}: {e}")
+            raise
 
 # saving logic separeted to a "service":
 # 1. can be reused in other saving file needs in the future
